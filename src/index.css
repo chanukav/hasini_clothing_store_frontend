@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+@theme {
+  --color-burgundy: #7A3045;
+  --color-rose: #C96A7B;
+  --color-ivory: #FFF9F6;
+  --color-blush: #F8E8E8;
+  --color-champagne: #C9A46C;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-burgundy);
+  }
+}
