@@ -20,6 +20,8 @@ function App() {
             <Route path="/" element={<CustomerLayout />}>
               <Route index element={<Home />} />
               <Route path="shop" element={<Shop />} />
+              <Route path="collections" element={<div className="p-24 text-center text-3xl font-serif text-burgundy">Collections Coming Soon</div>} />
+              <Route path="about" element={<div className="p-24 text-center text-3xl font-serif text-burgundy">About Us Coming Soon</div>} />
               <Route path="product/:id" element={<ProductDetail />} />
               <Route path="cart" element={<Cart />} />
               <Route path="checkout" element={<Checkout />} />

@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchMe = async () => {
     try {
-      const { data } = await api.get('/auth/me');
+      const { data } = await api.get('/api/auth/me');
       if (data.status === 'success') {
         setUser(data.data.user);
       }
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
+    const { data } = await api.post('/api/auth/login', { email, password });
     if (data.status === 'success') {
       localStorage.setItem('hasini_token', data.token);
       setToken(data.token);
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    const { data } = await api.post('/auth/register', userData);
+    const { data } = await api.post('/api/auth/register', userData);
     if (data.status === 'success') {
       localStorage.setItem('hasini_token', data.token);
       setToken(data.token);
