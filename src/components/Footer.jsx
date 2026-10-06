@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -12,11 +11,6 @@ const Footer = () => {
             <p className="text-burgundy/80 text-sm leading-relaxed">
               Elevating everyday elegance with premium materials and timeless designs. Crafted for the modern wardrobe.
             </p>
-            <div className="flex space-x-4 pt-2">
-              <a href="#" className="text-burgundy hover:text-rose transition-colors"><Instagram size={20} /></a>
-              <a href="#" className="text-burgundy hover:text-rose transition-colors"><Facebook size={20} /></a>
-              <a href="#" className="text-burgundy hover:text-rose transition-colors"><Twitter size={20} /></a>
-            </div>
           </div>
 
           <div>
