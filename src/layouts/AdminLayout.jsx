@@ -10,8 +10,11 @@ const AdminLayout = () => {
   }
 
   // Protect route: Redirect to login if not authenticated or not an ADMIN
-  if (!user || user.role !== 'ADMIN') {
+  if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  if (user.role !== 'ADMIN') {
+    return <Navigate to="/" replace />;
   }
 
   return (

@@ -37,7 +37,12 @@ const Navbar = () => {
             
             {user ? (
               <div className="flex items-center gap-4">
-                <span className="text-sm text-burgundy/80 font-medium">Hi, {user.name.split(' ')[0]}</span>
+                <span className="text-sm text-burgundy/80 font-medium">Hi, {user.name?.split(' ')[0] || ''}</span>
+                {user.role === 'ADMIN' && (
+                  <Link to="/admin" className="text-xs font-bold text-rose hover:text-burgundy transition-colors uppercase tracking-wider">
+                    Admin Panel
+                  </Link>
+                )}
                 <button onClick={logout} className="text-burgundy hover:text-rose transition-colors" title="Logout">
                   <LogOut size={18} />
                 </button>
@@ -67,7 +72,14 @@ const Navbar = () => {
             <div className="flex space-x-6 px-3 py-4 border-t border-champagne/20 mt-2">
               <button className="text-burgundy"><Search size={20} /></button>
               {user ? (
-                <button onClick={logout} className="text-burgundy"><LogOut size={20} /></button>
+                <>
+                  {user.role === 'ADMIN' && (
+                    <Link to="/admin" className="text-rose font-bold text-sm tracking-wider uppercase">
+                      Admin
+                    </Link>
+                  )}
+                  <button onClick={logout} className="text-burgundy"><LogOut size={20} /></button>
+                </>
               ) : (
                 <Link to="/login" className="text-burgundy"><User size={20} /></Link>
               )}
