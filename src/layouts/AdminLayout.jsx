@@ -13,7 +13,7 @@ const AdminLayout = () => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  if (user.role !== 'ADMIN') {
+  if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
     return <Navigate to="/" replace />;
   }
 
@@ -37,6 +37,9 @@ const AdminLayout = () => {
           </Link>
           <Link to="/admin/customers" className="flex items-center gap-3 px-4 py-3 text-ivory/70 hover:bg-rose/20 hover:text-ivory rounded-lg transition-colors">
             <Users size={20} /> Customers
+          </Link>
+          <Link to="/admin/admins" className="flex items-center gap-3 px-4 py-3 text-ivory/70 hover:bg-rose/20 hover:text-ivory rounded-lg transition-colors">
+            <Users size={20} /> Admins
           </Link>
         </nav>
 
