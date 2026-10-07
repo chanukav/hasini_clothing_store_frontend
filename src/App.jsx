@@ -12,6 +12,9 @@ import OrderConfirmation from './pages/OrderConfirmation';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/admin/Dashboard';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminCustomers from './pages/admin/AdminCustomers';
 
 function App() {
   return (
@@ -36,9 +39,9 @@ function App() {
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
-              <Route path="orders" element={<div className="p-24 text-center text-3xl font-serif text-burgundy">Order Management Coming Soon</div>} />
-              <Route path="products" element={<div className="p-24 text-center text-3xl font-serif text-burgundy">Product Management Coming Soon</div>} />
-              <Route path="customers" element={<div className="p-24 text-center text-3xl font-serif text-burgundy">Customer Management Coming Soon</div>} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="customers" element={<AdminCustomers />} />
             </Route>
           </Routes>
         </Router>
