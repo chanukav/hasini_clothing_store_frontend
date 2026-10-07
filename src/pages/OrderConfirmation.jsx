@@ -45,8 +45,8 @@ const OrderConfirmation = () => {
           </div>
         ) : (
           <div className="bg-ivory p-6 border border-champagne/50 mb-8">
-            <h3 className="font-bold text-burgundy mb-2">Payment Initializing...</h3>
-            <p className="text-sm text-burgundy/70 mb-4">PayHere integration will be loaded shortly.</p>
+            <h3 className="font-bold text-burgundy mb-2">Payment Successful</h3>
+            <p className="text-sm text-burgundy/70 mb-4">Your payment has been successfully processed via PayHere. You will receive an email confirmation shortly.</p>
           </div>
         )}
 

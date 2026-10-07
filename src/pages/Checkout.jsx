@@ -32,6 +32,8 @@ const Checkout = () => {
     }
   }, [cart, navigate, isSubmitting]);
 
+
+
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setError('');
@@ -55,15 +57,76 @@ const Checkout = () => {
       const response = await api.post('/api/orders', orderPayload);
       
       if (response.data.status === 'success') {
-        const orderId = response.data.data.order._id;
-        clearCart();
+        const orderData = response.data.data.order;
+        const orderId = orderData._id;
+        const orderNumber = orderData.orderNumber;
+        const paymentHash = response.data.data.paymentHash;
+        const merchantId = response.data.data.merchantId;
         
         if (data.paymentMethod === 'WHATSAPP') {
-          // Future WhatsApp routing
+          clearCart();
           navigate(`/order-confirmation/${orderId}?method=whatsapp`);
-        } else {
-          // Future PayHere routing
-          navigate(`/order-confirmation/${orderId}?method=payhere`);
+        } else if (data.paymentMethod === 'PAYHERE') {
+          if (!merchantId) {
+            setError("Merchant ID is missing from the server. Please check your backend configuration.");
+            setIsSubmitting(false);
+            return;
+          }
+          // PayHere Integration
+          if (!window.payhere || (typeof window.payhere.startCheckout !== 'function' && typeof window.payhere.startPayment !== 'function')) {
+            setError("Payment gateway is not loaded correctly. Please disable adblockers or refresh the page.");
+            setIsSubmitting(false);
+            return;
+          }
+
+          window.payhere.onCompleted = function onCompleted(pOrderId) {
+            console.log("Payment completed. OrderID:" + pOrderId);
+            clearCart();
+            navigate(`/order-confirmation/${orderId}?method=payhere`);
+          };
+          
+          window.payhere.onDismissed = function onDismissed() {
+            console.log("Payment dismissed");
+            setIsSubmitting(false);
+            setError("Payment was cancelled or dismissed. Your order is placed but payment is pending.");
+          };
+
+          window.payhere.onError = function onError(pError) {
+            console.log("Error:"  + pError);
+            setIsSubmitting(false);
+            setError("Payment error occurred. " + pError);
+          };
+
+          const amountFormatted = cartSubtotal.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/,/g, '');
+
+          const payment = {
+            sandbox: true,
+            merchant_id: merchantId,
+            return_url: `${window.location.origin}/order-confirmation/${orderId}?method=payhere`,
+            cancel_url: `${window.location.origin}/checkout`,
+            notify_url: `${import.meta.env.VITE_API_URL.replace('/api', '')}/api/orders/payhere/notify`,
+            order_id: orderNumber,
+            items: "Order " + orderNumber,
+            amount: amountFormatted,
+            currency: "LKR",
+            hash: paymentHash,
+            first_name: data.name.split(' ')[0],
+            last_name: data.name.split(' ').slice(1).join(' ') || '.',
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            city: "Colombo",
+            country: "Sri Lanka",
+            delivery_address: data.address,
+            delivery_city: "Colombo",
+            delivery_country: "Sri Lanka"
+          };
+
+          if (typeof window.payhere.startCheckout === 'function') {
+            window.payhere.startCheckout(payment);
+          } else {
+            window.payhere.startPayment(payment);
+          }
         }
       }
     } catch (err) {
