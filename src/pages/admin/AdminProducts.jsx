@@ -5,6 +5,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [editingId, setEditingId] = useState(null);
@@ -14,6 +15,7 @@ const AdminProducts = () => {
     description: '',
     price: '',
     category: '',
+    subcategory: '',
     images: ['https://placehold.co/400x600/f8f5f0/802b35?text=Product'],
     variants: [{ size: 'Standard', color: 'Default', stock: 0, sku: '' }],
     isActive: true
@@ -25,10 +27,14 @@ const AdminProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await api.get('/api/admin/products');
-      setProducts(data.data.products);
+      const [productsRes, categoriesRes] = await Promise.all([
+        api.get('/api/admin/products'),
+        api.get('/api/categories')
+      ]);
+      setProducts(productsRes.data.data.products);
+      setCategories(categoriesRes.data.data.categories);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -87,7 +93,7 @@ const AdminProducts = () => {
 
       setIsCreating(false);
       setEditingId(null);
-      setFormData({ name: '', description: '', price: '', category: '', images: ['https://placehold.co/400x600/f8f5f0/802b35?text=Product'], variants: [{ size: 'Standard', color: 'Default', stock: 0, sku: '' }], isActive: true });
+      setFormData({ name: '', description: '', price: '', category: '', subcategory: '', images: ['https://placehold.co/400x600/f8f5f0/802b35?text=Product'], variants: [{ size: 'Standard', color: 'Default', stock: 0, sku: '' }], isActive: true });
       fetchProducts();
     } catch (error) {
       console.error('Error saving product:', error);
@@ -100,6 +106,7 @@ const AdminProducts = () => {
       description: product.description,
       price: product.price,
       category: product.category,
+      subcategory: product.subcategory || '',
       images: product.images,
       variants: product.variants?.length ? product.variants : [{ size: 'Standard', color: 'Default', stock: 0, sku: '' }],
       isActive: product.isActive
@@ -162,7 +169,7 @@ const AdminProducts = () => {
             setIsCreating(!isCreating);
             if (isCreating) {
               setEditingId(null);
-              setFormData({ name: '', description: '', price: '', category: '', images: ['https://placehold.co/400x600/f8f5f0/802b35?text=Product'], variants: [{ size: 'Standard', color: 'Default', stock: 0, sku: '' }], isActive: true });
+              setFormData({ name: '', description: '', price: '', category: '', subcategory: '', images: ['https://placehold.co/400x600/f8f5f0/802b35?text=Product'], variants: [{ size: 'Standard', color: 'Default', stock: 0, sku: '' }], isActive: true });
             }
           }}
           className="bg-burgundy text-white px-4 py-2 rounded-lg font-medium hover:bg-rose transition-colors"
@@ -182,9 +189,25 @@ const AdminProducts = () => {
                     <label className="block text-sm font-medium text-burgundy mb-1">Name</label>
                     <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full p-2 rounded border border-champagne bg-white text-burgundy focus:ring-1 focus:ring-burgundy outline-none" />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-burgundy mb-1">Category</label>
-                    <input required type="text" name="category" value={formData.category} onChange={handleInputChange} className="w-full p-2 rounded border border-champagne bg-white text-burgundy focus:ring-1 focus:ring-burgundy outline-none" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-burgundy mb-1">Category</label>
+                      <select required name="category" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value, subcategory: ''})} className="w-full p-2 rounded border border-champagne bg-white text-burgundy focus:ring-1 focus:ring-burgundy outline-none">
+                        <option value="" disabled>Select a category</option>
+                        {categories.filter(c => c.isActive).map(category => (
+                          <option key={category._id} value={category.slug}>{category.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-burgundy mb-1">Subcategory</label>
+                      <select name="subcategory" value={formData.subcategory} onChange={handleInputChange} className="w-full p-2 rounded border border-champagne bg-white text-burgundy focus:ring-1 focus:ring-burgundy outline-none">
+                        <option value="">None</option>
+                        {categories.find(c => c.slug === formData.category)?.subcategories?.map(sub => (
+                          <option key={sub.slug} value={sub.slug}>{sub.name}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -270,7 +293,10 @@ const AdminProducts = () => {
                     <span className="text-burgundy font-medium">{product.name}</span>
                   </div>
                 </td>
-                <td className="p-4 text-burgundy/80">{product.category}</td>
+                <td className="p-4">
+                  <div className="text-burgundy/80 capitalize">{product.category}</div>
+                  {product.subcategory && <div className="text-xs text-burgundy/60 capitalize mt-1">{product.subcategory}</div>}
+                </td>
                 <td className="p-4 text-burgundy/80">LKR {product.price.toFixed(2)}</td>
                 <td className="p-4 text-burgundy/80">{product.variants?.reduce((acc, v) => acc + v.stock, 0) || 0}</td>
                 <td className="p-4">

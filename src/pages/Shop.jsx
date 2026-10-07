@@ -3,46 +3,60 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { Search, SlidersHorizontal, ChevronDown, Frown } from 'lucide-react';
 import api from '../api';
 
-const categories = ['All', 'T-Shirts', 'Jeans', 'Dresses', 'Shirts', 'Activewear', 'Outerwear', 'Shorts'];
+// Note: categories are now fetched from the backend
 const sizes = ['S', 'M', 'L', '15', '16', '30', '32'];
 const colors = ['White', 'Black', 'Blue', 'Cream', 'Grey', 'Navy'];
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  const fetchProducts = async () => {
+  const fetchProductsAndCategories = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/api/products', { params: searchParams });
-      if (data.status === 'success') {
-        setProducts(data.data.products);
+      const [productsRes, categoriesRes] = await Promise.all([
+        api.get('/api/products', { params: searchParams }),
+        api.get('/api/categories')
+      ]);
+      if (productsRes.data.status === 'success') {
+        setProducts(productsRes.data.data.products);
+      }
+      if (categoriesRes.data.status === 'success') {
+        setCategories(categoriesRes.data.data.categories);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error fetching products and categories:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchProductsAndCategories();
   }, [searchParams]);
 
-  const updateFilter = (key, value) => {
+  const updateFilter = (updates) => {
     const newParams = new URLSearchParams(searchParams);
-    if (value && value !== 'All') {
-      newParams.set(key, value.toLowerCase());
-    } else {
-      newParams.delete(key);
+    
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === undefined || value === 'All') {
+        newParams.delete(key);
+      } else {
+        newParams.set(key, value.toLowerCase());
+      }
     }
+    
     setSearchParams(newParams);
   };
 
   const currentCategory = searchParams.get('category') || 'All';
+  const currentSubcategory = searchParams.get('subcategory') || '';
   const currentSort = searchParams.get('sort') || 'newest';
+
+  const selectedCatObj = categories.find(c => c.slug.toLowerCase() === currentCategory.toLowerCase());
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -61,7 +75,7 @@ const Shop = () => {
               className="w-full md:w-64 pl-10 pr-4 py-2 bg-transparent border border-burgundy/20 text-burgundy focus:outline-none focus:border-rose transition-colors"
               defaultValue={searchParams.get('search') || ''}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') updateFilter('search', e.target.value);
+                if (e.key === 'Enter') updateFilter({ search: e.target.value });
               }}
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-burgundy/50" size={18} />
@@ -83,14 +97,50 @@ const Shop = () => {
           <div className="mb-8">
             <h3 className="font-bold text-burgundy uppercase tracking-wider mb-4 border-b border-champagne/50 pb-2">Category</h3>
             <ul className="space-y-3">
-              {categories.map((cat) => (
-                <li key={cat}>
-                  <button 
-                    onClick={() => updateFilter('category', cat)}
-                    className={`text-sm transition-colors ${currentCategory.toLowerCase() === cat.toLowerCase() ? 'text-rose font-bold' : 'text-burgundy/70 hover:text-burgundy'}`}
-                  >
-                    {cat}
-                  </button>
+              <li>
+                <button 
+                  onClick={() => updateFilter({ category: 'All', subcategory: null })}
+                  className={`text-sm transition-colors ${currentCategory === 'All' ? 'text-rose font-bold' : 'text-burgundy/70 hover:text-burgundy'}`}
+                >
+                  All
+                </button>
+              </li>
+              {categories.filter(c => c.isActive).map((cat) => (
+                <li key={cat._id}>
+                  <div className="flex flex-col space-y-2">
+                    <button 
+                      onClick={() => updateFilter({ category: cat.slug, subcategory: null })}
+                      className={`text-sm text-left transition-colors ${currentCategory.toLowerCase() === cat.slug.toLowerCase() ? 'text-rose font-bold' : 'text-burgundy/70 hover:text-burgundy'}`}
+                    >
+                      {cat.name}
+                    </button>
+                    {/* Render Subcategories if this category is selected */}
+                    {currentCategory.toLowerCase() === cat.slug.toLowerCase() && cat.subcategories && cat.subcategories.length > 0 && (
+                      <ul className="pl-4 space-y-2 border-l border-champagne ml-1">
+                        <li>
+                          <button 
+                            onClick={() => {
+                              updateFilter('category', cat.slug);
+                              updateFilter('subcategory', null);
+                            }}
+                            className={`text-xs transition-colors ${currentCategory.toLowerCase() === cat.slug.toLowerCase() && !currentSubcategory ? 'text-rose font-bold' : 'text-burgundy/70 hover:text-burgundy'}`}
+                          >
+                            All {cat.name}
+                          </button>
+                        </li>
+                        {cat.subcategories.map(sub => (
+                          <li key={sub.slug}>
+                            <button 
+                              onClick={() => updateFilter({ category: cat.slug, subcategory: sub.slug })}
+                              className={`text-xs text-left transition-colors ${currentCategory.toLowerCase() === cat.slug.toLowerCase() && currentSubcategory.toLowerCase() === sub.slug.toLowerCase() ? 'text-rose font-bold' : 'text-burgundy/70 hover:text-burgundy'}`}
+                            >
+                              {sub.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -102,7 +152,7 @@ const Shop = () => {
             <select 
               className="w-full bg-transparent border border-burgundy/20 text-burgundy text-sm py-2 px-3 focus:outline-none focus:border-rose"
               value={currentSort}
-              onChange={(e) => updateFilter('sort', e.target.value)}
+              onChange={(e) => updateFilter({ sort: e.target.value })}
             >
               <option value="newest">Newest Arrivals</option>
               <option value="price_asc">Price: Low to High</option>
@@ -120,7 +170,7 @@ const Shop = () => {
                 return (
                   <button 
                     key={size}
-                    onClick={() => updateFilter('size', isActive ? null : size)}
+                    onClick={() => updateFilter({ size: isActive ? null : size })}
                     className={`w-10 h-10 flex items-center justify-center text-sm transition-colors border ${isActive ? 'bg-burgundy text-ivory border-burgundy' : 'border-burgundy/20 text-burgundy hover:border-burgundy'}`}
                   >
                     {size}
@@ -139,7 +189,7 @@ const Shop = () => {
                 return (
                   <button 
                     key={color}
-                    onClick={() => updateFilter('color', isActive ? null : color)}
+                    onClick={() => updateFilter({ color: isActive ? null : color })}
                     className={`px-3 py-1 text-sm transition-colors border ${isActive ? 'bg-rose text-ivory border-rose' : 'border-burgundy/20 text-burgundy hover:border-burgundy'}`}
                   >
                     {color}

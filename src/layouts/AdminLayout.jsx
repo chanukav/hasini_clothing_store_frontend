@@ -35,6 +35,9 @@ const AdminLayout = () => {
           <Link to="/admin/products" className="flex items-center gap-3 px-4 py-3 text-ivory/70 hover:bg-rose/20 hover:text-ivory rounded-lg transition-colors">
             <Package size={20} /> Products
           </Link>
+          <Link to="/admin/categories" className="flex items-center gap-3 px-4 py-3 text-ivory/70 hover:bg-rose/20 hover:text-ivory rounded-lg transition-colors">
+            <Package size={20} /> Categories
+          </Link>
           <Link to="/admin/customers" className="flex items-center gap-3 px-4 py-3 text-ivory/70 hover:bg-rose/20 hover:text-ivory rounded-lg transition-colors">
             <Users size={20} /> Customers
           </Link>
