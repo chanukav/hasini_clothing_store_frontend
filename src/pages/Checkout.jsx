@@ -67,8 +67,8 @@ const Checkout = () => {
           clearCart();
           navigate(`/order-confirmation/${orderId}?method=whatsapp`);
         } else if (data.paymentMethod === 'PAYHERE') {
-          if (!merchantId) {
-            setError("Merchant ID is missing from the server. Please check your backend configuration.");
+          if (!merchantId || !paymentHash) {
+            setError("Merchant ID or Payment Hash is missing from the server. Please check your backend environment variables (PAYHERE_MERCHANT_ID and PAYHERE_SECRET).");
             setIsSubmitting(false);
             return;
           }
