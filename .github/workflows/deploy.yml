@@ -37,7 +37,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:${{ github.sha }}
 
-      - name: Deploy to AWS EC2 via SSH
+      - name: Deploy to AWS EC2 via Docker Compose
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -45,23 +45,47 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            echo "Starting Frontend deployment on AWS EC2..."
+            echo "Starting Frontend deployment on AWS EC2 via Docker Compose..."
 
-            # Pull latest frontend image
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:latest
+            # Ensure app directory exists
+            mkdir -p ~/app
+            cd ~/app
 
-            # Stop and remove existing container if running
-            docker stop hasini-frontend || true
-            docker rm hasini-frontend || true
+            # Write or update docker-compose.yml
+            cat << 'EOF' > docker-compose.yml
+            services:
+              backend:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/hasini-backend:latest
+                container_name: hasini-backend
+                restart: always
+                ports:
+                  - "5000:5000"
+                env_file:
+                  - .env.backend
+                networks:
+                  - app-network
 
-            # Run new frontend container on port 80
-            docker run -d \
-              --name hasini-frontend \
-              --restart always \
-              -p 80:80 \
-              ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:latest
+              frontend:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:latest
+                container_name: hasini-frontend
+                restart: always
+                ports:
+                  - "80:80"
+                depends_on:
+                  - backend
+                networks:
+                  - app-network
 
-            # Clean up old unused images
+            networks:
+              app-network:
+                driver: bridge
+            EOF
+
+            # Pull latest frontend image and update the container seamlessly
+            docker compose pull frontend
+            docker compose up -d --no-deps frontend
+
+            # Clean up dangling images to save disk space
             docker image prune -f
 
-            echo "Frontend successfully deployed!"
+            echo "Frontend successfully deployed with Docker Compose!"
