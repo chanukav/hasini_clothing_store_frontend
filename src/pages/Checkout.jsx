@@ -104,7 +104,7 @@ const Checkout = () => {
             merchant_id: merchantId,
             return_url: `${window.location.origin}/order-confirmation/${orderId}?method=payhere`,
             cancel_url: `${window.location.origin}/checkout`,
-            notify_url: `${import.meta.env.VITE_API_URL.replace('/api', '')}/api/orders/payhere/notify`,
+            notify_url: `${(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')}/api/orders/payhere/notify`,
             order_id: orderNumber,
             items: "Order " + orderNumber,
             amount: amountFormatted,
