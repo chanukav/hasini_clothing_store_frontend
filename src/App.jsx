@@ -17,6 +17,7 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminCustomers from './pages/admin/AdminCustomers';
 import AdminAdmins from './pages/admin/AdminAdmins';
 import AdminCategories from './pages/admin/AdminCategories';
+import AdminSettings from './pages/admin/AdminSettings';
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
               <Route path="customers" element={<AdminCustomers />} />
               <Route path="admins" element={<AdminAdmins />} />
               <Route path="categories" element={<AdminCategories />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Routes>
         </Router>

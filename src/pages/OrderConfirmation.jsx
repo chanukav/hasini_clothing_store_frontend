@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
 import { useParams, useSearchParams, Link, useLocation } from 'react-router-dom';
 import { CheckCircle, MessageCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import api from '../api';
 
 const OrderConfirmation = () => {
   const { id } = useParams();
@@ -8,11 +9,25 @@ const OrderConfirmation = () => {
   const method = searchParams.get('method');
   const location = useLocation();
   const orderDetails = location?.state;
+  const [storePhone, setStorePhone] = useState('94771234567'); // Default fallback
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await api.get('/api/settings?key=whatsapp_number');
+        if (response.data.status === 'success' && response.data.data.setting?.value) {
+          setStorePhone(response.data.data.setting.value);
+        }
+      } catch (error) {
+        console.error('Failed to fetch WhatsApp setting:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   // If this was a WhatsApp order, we'd trigger the external redirect here
   // But for now, we just show the prompt
   const handleWhatsAppRedirect = () => {
-    const phone = "94771234567"; // Store phone number
     let message = `Hello Hasini Clothing! I just placed an order.\n\n*Order Number:* ${id}\n`;
 
     if (orderDetails) {
@@ -43,7 +58,7 @@ const OrderConfirmation = () => {
       message += `Could you please assist me with the payment?`;
     }
 
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${storePhone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   useEffect(() => {
