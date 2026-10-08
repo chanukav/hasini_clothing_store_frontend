@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ShoppingCart, Package, DollarSign, Users } from 'lucide-react';
 import api from '../../api';
 
@@ -60,9 +61,15 @@ const AdminDashboard = () => {
       <div className="bg-ivory border border-champagne/30 rounded-xl p-8 text-center text-burgundy py-24">
         <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-champagne" />
         <h2 className="text-2xl font-serif font-bold mb-2">Recent Orders</h2>
-        <p className="text-burgundy/70 max-w-md mx-auto">
+        <p className="text-burgundy/70 max-w-md mx-auto mb-6">
           The order management table is ready to be connected to the backend API endpoint.
         </p>
+        <Link 
+          to="/admin/orders" 
+          className="inline-block bg-burgundy text-ivory px-6 py-3 rounded hover:bg-rose transition-colors font-medium"
+        >
+          Manage Orders
+        </Link>
       </div>
     </div>
   );

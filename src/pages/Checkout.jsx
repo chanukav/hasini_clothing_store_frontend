@@ -261,7 +261,7 @@ const Checkout = () => {
                 <div key={item.sku} className="flex gap-4">
                   <div className="w-16 h-20 bg-ivory flex-shrink-0 relative">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover object-top" />
-                    <span className="absolute -top-2 -right-2 bg-burgundy text-ivory text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute top-1 right-1 bg-burgundy text-ivory text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                       {item.quantity}
                     </span>
                   </div>
