@@ -53,23 +53,36 @@ const AdminOrders = () => {
   const handleDeleteSelected = async () => {
     if (!window.confirm(`Are you sure you want to delete ${selectedOrders.length} order(s)?`)) return;
     try {
-      await Promise.all(selectedOrders.map(id => api.delete(`/api/admin/orders/${id}`)));
+      await Promise.all(
+        selectedOrders.map(id =>
+          api.delete(`/api/admin/orders/${id}`).catch(err => {
+            // If already deleted or not found, treat as success
+            if (err.response?.status === 404) return null;
+            throw err;
+          })
+        )
+      );
+      setOrders(prev => prev.filter(order => !selectedOrders.includes(order._id)));
       setSelectedOrders([]);
       fetchOrders();
     } catch (error) {
       console.error('Error deleting orders:', error);
-      alert('Error deleting some orders');
+      fetchOrders();
     }
   };
 
   const handleDeleteSingle = async (id) => {
     if (!window.confirm('Are you sure you want to delete this order?')) return;
     try {
-      await api.delete(`/api/admin/orders/${id}`);
+      await api.delete(`/api/admin/orders/${id}`).catch(err => {
+        if (err.response?.status === 404) return null;
+        throw err;
+      });
+      setOrders(prev => prev.filter(order => order._id !== id));
       fetchOrders();
     } catch (error) {
       console.error('Error deleting order:', error);
-      alert('Error deleting order');
+      fetchOrders();
     }
   };
 
