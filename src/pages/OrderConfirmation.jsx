@@ -1,18 +1,49 @@
 import { useEffect } from 'react';
-import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link, useLocation } from 'react-router-dom';
 import { CheckCircle, MessageCircle } from 'lucide-react';
 
 const OrderConfirmation = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const method = searchParams.get('method');
+  const location = useLocation();
+  const orderDetails = location?.state;
 
   // If this was a WhatsApp order, we'd trigger the external redirect here
   // But for now, we just show the prompt
   const handleWhatsAppRedirect = () => {
     const phone = "94771234567"; // Store phone number
-    const message = encodeURIComponent(`Hello Hasini Clothing! I just placed an order. Order Number: ${id}. Could you please assist me with the payment?`);
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    let message = `Hello Hasini Clothing! I just placed an order.\n\n*Order Number:* ${id}\n`;
+
+    if (orderDetails) {
+      const { customerDetails, cartItems, total } = orderDetails;
+      
+      message += `*Name:* ${customerDetails.name}\n`;
+      message += `*Phone:* ${customerDetails.phone}\n`;
+      message += `*Address:* ${customerDetails.address}\n\n`;
+      
+      // Group items by name and color
+      const groupedItems = {};
+      cartItems.forEach(item => {
+        const key = `${item.color} ${item.name}`;
+        if (!groupedItems[key]) {
+          groupedItems[key] = [];
+        }
+        groupedItems[key].push(`${item.size} × ${item.quantity}`);
+      });
+      
+      message += `*Order Details:*\n`;
+      const itemStrings = Object.entries(groupedItems).map(([key, sizes]) => {
+        return `${key} — ${sizes.join(', ')}`;
+      });
+      message += itemStrings.join('; ') + '.\n\n';
+      
+      message += `*Total:* LKR ${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    } else {
+      message += `Could you please assist me with the payment?`;
+    }
+
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   useEffect(() => {

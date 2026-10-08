@@ -64,8 +64,13 @@ const Checkout = () => {
         const merchantId = response.data.data.merchantId;
         
         if (data.paymentMethod === 'WHATSAPP') {
+          const stateData = {
+            cartItems: cart,
+            customerDetails: data,
+            total: cartSubtotal
+          };
           clearCart();
-          navigate(`/order-confirmation/${orderId}?method=whatsapp`);
+          navigate(`/order-confirmation/${orderNumber}?method=whatsapp`, { state: stateData });
         } else if (data.paymentMethod === 'PAYHERE') {
           if (!merchantId || !paymentHash) {
             setError("Merchant ID or Payment Hash is missing from the server. Please check your backend environment variables (PAYHERE_MERCHANT_ID and PAYHERE_SECRET).");
