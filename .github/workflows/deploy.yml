@@ -28,6 +28,7 @@ jobs:
         with:
           context: .
           push: true
+          provenance: false
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
@@ -51,38 +52,40 @@ jobs:
             mkdir -p ~/app
             cd ~/app
 
-            # Write or update docker-compose.yml
+            # Write or update docker-compose.yml with valid YAML indentation
             cat << 'EOF' > docker-compose.yml
-            services:
-              backend:
-                image: ${{ secrets.DOCKERHUB_USERNAME }}/hasini-backend:latest
-                container_name: hasini-backend
-                restart: always
-                ports:
-                  - "5000:5000"
-                env_file:
-                  - .env.backend
-                networks:
-                  - app-network
+services:
+  backend:
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/hasini-backend:latest
+    container_name: hasini-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env.backend
+    networks:
+      - app-network
 
-              frontend:
-                image: ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:latest
-                container_name: hasini-frontend
-                restart: always
-                ports:
-                  - "80:80"
-                depends_on:
-                  - backend
-                networks:
-                  - app-network
+  frontend:
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:latest
+    container_name: hasini-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
-            networks:
-              app-network:
-                driver: bridge
-            EOF
+networks:
+  app-network:
+    driver: bridge
+EOF
 
-            # Pull latest frontend image and update the container seamlessly
-            docker compose pull frontend
+            # Explicitly pull latest image to local Docker daemon
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/hasini-frontend:latest
+
+            # Update and restart only the frontend container with zero downtime
             docker compose up -d --no-deps frontend
 
             # Clean up dangling images to save disk space
