@@ -15,7 +15,7 @@ const Checkout = () => {
 
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       name: user ? user.name : '',
       email: user ? user.email : '',
@@ -24,6 +24,18 @@ const Checkout = () => {
       paymentMethod: 'PAYHERE'
     }
   });
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: '',
+        paymentMethod: 'PAYHERE'
+      });
+    }
+  }, [user, reset]);
 
   // Empty cart prevention
   useEffect(() => {
@@ -154,6 +166,30 @@ const Checkout = () => {
       {error && (
         <div className="bg-rose text-ivory p-4 mb-8">
           {error}
+        </div>
+      )}
+
+      {/* Account / Guest Status Banner */}
+      {!user ? (
+        <div className="bg-blush border border-champagne/40 p-4 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-burgundy text-sm">Checking out as Guest</p>
+            <p className="text-xs text-burgundy/70 mt-0.5">
+              Have an account? Sign in for saved addresses and easier order tracking.
+            </p>
+          </div>
+          <Link
+            to="/login?redirect=/checkout"
+            className="text-xs font-semibold uppercase tracking-wider bg-burgundy text-ivory px-4 py-2 hover:bg-rose transition-colors whitespace-nowrap"
+          >
+            Sign In
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-emerald-50 border border-emerald-200/60 p-4 mb-8 flex items-center justify-between text-xs text-emerald-800">
+          <span>
+            Logged in as <strong className="font-semibold">{user.name}</strong> ({user.email})
+          </span>
         </div>
       )}
 

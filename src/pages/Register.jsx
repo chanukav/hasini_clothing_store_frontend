@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
@@ -8,6 +8,8 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/shop';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,7 +22,7 @@ const Register = () => {
     
     try {
       await register(formData);
-      navigate('/shop');
+      navigate(redirect);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to register account');
     } finally {
@@ -93,7 +95,7 @@ const Register = () => {
         </form>
         
         <p className="text-sm text-burgundy/70 mt-8">
-          Already have an account? <Link to="/login" className="text-rose hover:text-burgundy font-medium transition-colors">Sign in here</Link>
+          Already have an account? <Link to={redirect !== '/shop' ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'} className="text-rose hover:text-burgundy font-medium transition-colors">Sign in here</Link>
         </p>
       </div>
     </div>

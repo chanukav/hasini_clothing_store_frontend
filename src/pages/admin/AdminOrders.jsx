@@ -146,7 +146,14 @@ const AdminOrders = () => {
                   />
                 </td>
                 <td className="p-4 text-burgundy font-medium text-sm">#{order._id.substring(order._id.length - 8)}</td>
-                <td className="p-4 text-burgundy/80">{order.customer?.name || 'Unknown'}</td>
+                <td className="p-4 text-burgundy/80">
+                  <span>{order.customer?.name || order.customerDetails?.name || 'Unknown'}</span>
+                  {!order.customer && (
+                    <span className="ml-1.5 inline-block text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-champagne/40 text-burgundy">
+                      Guest
+                    </span>
+                  )}
+                </td>
                 <td className="p-4 text-burgundy/80">{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td className="p-4 text-burgundy font-medium">LKR {order.total.toFixed(2)}</td>
                 <td className="p-4">

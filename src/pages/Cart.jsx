@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Trash2, ArrowRight, ShoppingBag, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,6 +8,7 @@ const Cart = () => {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showGuestModal, setShowGuestModal] = useState(false);
 
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -145,10 +147,10 @@ const Cart = () => {
                 if (user) {
                   navigate('/checkout');
                 } else {
-                  navigate('/login?redirect=/checkout');
+                  setShowGuestModal(true);
                 }
               }}
-              className="w-full bg-burgundy text-ivory py-4 font-medium uppercase tracking-widest hover:bg-rose transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-burgundy text-ivory py-4 font-medium uppercase tracking-widest hover:bg-rose transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               Secure Checkout <ArrowRight size={18} />
             </button>
@@ -159,6 +161,55 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+      {/* Guest vs Sign In Checkout Modal */}
+      {showGuestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="bg-ivory border border-champagne p-6 md:p-8 max-w-md w-full relative shadow-2xl">
+            <button 
+              onClick={() => setShowGuestModal(false)}
+              className="absolute top-4 right-4 text-burgundy/60 hover:text-burgundy transition-colors p-1"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-2xl font-serif font-bold text-burgundy mb-2">Checkout Options</h3>
+            <p className="text-sm text-burgundy/75 mb-6">
+              You can checkout immediately as a guest, or sign in to your account to save order history.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowGuestModal(false);
+                  navigate('/checkout');
+                }}
+                className="w-full bg-burgundy text-ivory py-3.5 font-medium uppercase tracking-wider hover:bg-rose transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Continue as Guest <ArrowRight size={16} />
+              </button>
+              <button
+                onClick={() => {
+                  setShowGuestModal(false);
+                  navigate('/login?redirect=/checkout');
+                }}
+                className="w-full border-2 border-burgundy text-burgundy py-3.5 font-medium uppercase tracking-wider hover:bg-burgundy hover:text-ivory transition-colors cursor-pointer"
+              >
+                Sign In to Account
+              </button>
+            </div>
+            <p className="text-xs text-center text-burgundy/70 mt-5">
+              Don't have an account?{' '}
+              <Link 
+                to="/register?redirect=/checkout" 
+                onClick={() => setShowGuestModal(false)}
+                className="text-rose font-semibold hover:underline"
+              >
+                Register here
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

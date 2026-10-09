@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -9,6 +9,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/shop';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,9 +20,9 @@ const Login = () => {
     try {
       const loggedUser = await login(email, password);
       if (loggedUser && loggedUser.role === 'ADMIN') {
-        navigate('/admin');
+        navigate(redirect.startsWith('/admin') ? redirect : '/admin');
       } else {
-        navigate('/shop');
+        navigate(redirect);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
@@ -76,7 +78,7 @@ const Login = () => {
         </form>
         
         <p className="text-sm text-burgundy/70 mt-8">
-          Don't have an account? <Link to="/register" className="text-rose hover:text-burgundy font-medium transition-colors">Register here</Link>
+          Don't have an account? <Link to={redirect !== '/shop' ? `/register?redirect=${encodeURIComponent(redirect)}` : '/register'} className="text-rose hover:text-burgundy font-medium transition-colors">Register here</Link>
         </p>
       </div>
     </div>
